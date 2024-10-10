@@ -51,7 +51,7 @@
       let minutes = Math.floor(now.getMinutes() / 10) * 10;
       now.setMinutes(minutes, 0, 0);
 
-      // URLs der Bilder erstellen (Korrektur: now als date, now mit korrigierten Minuten als time)
+      // URLs der Bilder erstellen
       let urlLeft = createImageUrl(now, now, 9);
       let urlRight = createImageUrl(now, now, 10);
 
@@ -70,8 +70,11 @@
       imgLeft.onerror = function () {
         console.log('Fehler beim Laden des linken Bildes. Versuche es mit dem Bild von vor 10 Minuten.');
         let previousTimestamp = getPreviousTimestamp(now); // Berechne den vorherigen Zeitstempel
-        let newUrlLeft = createImageUrl(previousTimestamp, previousTimestamp, 9);
+        let newUrlLeft = createImageUrl(previousTimestamp, previousTimestamp, 9); 
         imgLeft.src = newUrlLeft; // Bild mit neuer URL laden
+
+        // Aktualisiere den Zeitstempel mit dem previousTimestamp und angepassten Minuten (Korrektur)
+        updateTimestamp(previousTimestamp, previousTimestamp.getMinutes()); 
       };
 
       imgRight.onload = function () {
@@ -83,14 +86,22 @@
         let previousTimestamp = getPreviousTimestamp(now); // Berechne den vorherigen Zeitstempel
         let newUrlRight = createImageUrl(previousTimestamp, previousTimestamp, 10);
         imgRight.src = newUrlRight; // Bild mit neuer URL laden
+
+        // Aktualisiere den Zeitstempel mit dem previousTimestamp und angepassten Minuten (Korrektur)
+        updateTimestamp(previousTimestamp, previousTimestamp.getMinutes()); 
       };
 
       imgLeft.src = urlLeft;
       imgRight.src = urlRight;
 
-      // Zeitstempel aktualisieren
-      let dateString = now.getFullYear() + '/' + ('0' + (now.getMonth() + 1)).slice(-2) + '/' + ('0' + now.getDate()).slice(-2);
-      let timeString = ('0' + now.getHours()).slice(-2) + '-' + ('0' + minutes).slice(-2) + '-00';
+      // Zeitstempel initialisieren
+      updateTimestamp(now, minutes);
+    }
+
+    // Funktion zur Aktualisierung des Zeitstempels
+    function updateTimestamp(date, minutes) {
+      let dateString = date.getFullYear() + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + ('0' + date.getDate()).slice(-2);
+      let timeString = ('0' + date.getHours()).slice(-2) + '-' + ('0' + minutes).slice(-2) + '-00';
       document.getElementById('timestamp').textContent = dateString + ' ' + timeString;
     }
 
