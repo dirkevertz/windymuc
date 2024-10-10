@@ -5,42 +5,50 @@
   <title>Webcam Bilder</title>
   <style>
     .container {
-      display: flex;
       position: relative;
-      gap: 0; /* Abstand zwischen den Bildern auf 0 setzen */
-      overflow: hidden; /* Überlauf ausblenden, um abgeschnittene Bereiche zu verstecken */
-      transform: scale(1.5);
+      display: flex; 
+    }
+
+    .image-container {
+      display: flex;
+      transform: scale(1.9);
     }
 
     .image {
       width: 50%;
-      object-fit: cover; /* Bilder skalieren, um den Container zu füllen */
+      object-fit: cover;
+    }
+
+    .timestamp-container {
+      position: absolute;
+      top: 10px; 
+      right: 10px;
+      z-index: 1;
     }
 
     .timestamp {
-      position: absolute;
-      top: 10px;
-      left: 10px;
       background-color: rgba(0, 0, 0, 0.5);
       color: white;
       padding: 5px;
       font-family: monospace;
-      z-index: 1;
-      /* Stellt sicher, dass der Zeitstempel über den Bildern angezeigt wird */
+      display: inline-block;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="container">
-    <img class="image" id="imageLeft" src="" alt="Bild links">
-    <img class="image" id="imageRight" src="" alt="Bild rechts">
-    <div class="timestamp" id="timestamp"></div>
+  <div class="container"> 
+    <div class="timestamp-container">
+      <div class="timestamp" id="timestamp"></div>
+    </div>
+    <div class="image-container"> 
+      <img class="image" id="imageLeft" src="" alt="Bild links">
+      <img class="image" id="imageRight" src="" alt="Bild rechts">
+    </div>
   </div>
 
   <script>
-    // Funktion zum Erstellen der Bild-URL (jetzt außerhalb von updateImages)
     function createImageUrl(date, cam) {
       let dateString = date.getFullYear() + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + ('0' + date.getDate()).slice(-2);
       let timeString = ('0' + date.getHours()).slice(-2) + '-' + ('0' + date.getMinutes()).slice(-2) + '-00';
@@ -48,21 +56,12 @@
     }
 
     function updateImages() {
-      // Aktuelles Datum und Zeit abrufen
       let now = new Date();
-
-      // Minuten auf den nächsten 10-Minuten-Takt abrunden
       let minutes = Math.floor(now.getMinutes() / 10) * 10;
       now.setMinutes(minutes, 0, 0);
-
-      // Zeitstempel initialisieren
       timestamp = new Date(now.getTime());
-
-      // URLs der Bilder erstellen
       let urlLeft = createImageUrl(timestamp, 9);
       let urlRight = createImageUrl(timestamp, 10);
-
-      // Bilder laden und auf Fehler prüfen
       loadImages(urlLeft, urlRight);
     }
 
@@ -70,27 +69,24 @@
       let imgLeft = new Image();
       let imgRight = new Image();
 
-      // Hilfsfunktion zum Laden eines Bildes mit Fallback
       function loadImage(img, url, cam, callback) {
-        img.onload = function() {
+        img.onload = function () {
           callback(url);
         };
 
-        img.onerror = function() {
+        img.onerror = function () {
           console.log('Fehler beim Laden des Bildes von ' + url + '. Versuche es mit dem Bild von vor 10 Minuten.');
-          timestamp = getPreviousTimestamp(timestamp); // timestamp für beide Bilder aktualisieren
+          timestamp = getPreviousTimestamp(timestamp);
           let newUrl = createImageUrl(timestamp, cam) + '?t=' + Date.now();
           console.log('newUrl: ' + newUrl);
-          loadImage(img, newUrl, cam, callback); // Rekursiver Aufruf mit neuer URL
+          loadImage(img, newUrl, cam, callback);
         };
 
         img.src = url;
       }
 
-      // Linkes Bild laden
-      loadImage(imgLeft, urlLeft, 9, function(finalUrlLeft) {
-        // Rechtes Bild mit dem gleichen Zeitstempel laden
-        loadImage(imgRight, createImageUrl(timestamp, 10), 10, function(finalUrlRight) {
+      loadImage(imgLeft, urlLeft, 9, function (finalUrlLeft) {
+        loadImage(imgRight, createImageUrl(timestamp, 10), 10, function (finalUrlRight) {
           replaceImage('imageLeft', finalUrlLeft);
           replaceImage('imageRight', finalUrlRight);
           updateTimestamp(timestamp);
@@ -99,47 +95,37 @@
     }
 
     function replaceImage(imageId, imageUrl) {
-      // Parent-Node speichern
       var parentNode = document.getElementById(imageId).parentNode;
-
-      // Altes Bild entfernen
       var oldImage = document.getElementById(imageId);
       if (oldImage) {
         oldImage.parentNode.removeChild(oldImage);
       }
-
-      // Neues Bild erstellen und hinzufügen
       var newImage = document.createElement('img');
       newImage.src = imageUrl;
       newImage.classList.add('image');
       newImage.id = imageId;
-      parentNode.appendChild(newImage); // Parent-Node verwenden
+      parentNode.appendChild(newImage);
     }
 
-    // Funktion zur Aktualisierung des Zeitstempels
     function updateTimestamp(date) {
       let dateString = date.getFullYear() + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + ('0' + date.getDate()).slice(-2);
       let timeString = ('0' + date.getHours()).slice(-2) + '-' + ('0' + date.getMinutes()).slice(-2) + '-00';
       document.getElementById('timestamp').textContent = dateString + ' ' + timeString;
     }
 
-    // Funktion zur Berechnung des vorherigen Zeitstempels
     function getPreviousTimestamp(date) {
-      let newDate = new Date(date.getTime()); // Kopie des Datum-Objekts erstellen
+      let newDate = new Date(date.getTime());
       let minutes = newDate.getMinutes();
-      minutes = Math.floor(minutes / 10) * 10 - 10; // In 10er-Schritten abrunden und 10 Minuten abziehen
-      newDate.setMinutes(minutes, 0, 0); // Minuten, Sekunden und Millisekunden zurücksetzen
+      minutes = Math.floor(minutes / 10) * 10 - 10;
+      newDate.setMinutes(minutes, 0, 0);
       return newDate;
     }
 
-    // Globale Variable für den Zeitstempel
     let timestamp;
 
-    // Bilder beim Laden der Seite aktualisieren
     updateImages();
 
-    // Bilder alle 1 Minute aktualisieren
-    setInterval(updateImages, 60000); // Aktualisierungsintervall auf 1 Minute geändert
+    setInterval(updateImages, 60000);
   </script>
 
 </body>
