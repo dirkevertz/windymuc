@@ -7,10 +7,14 @@
     .container {
       display: flex;
       position: relative;
+      gap: 0; /* Abstand zwischen den Bildern auf 0 setzen */
+      overflow: hidden; /* Überlauf ausblenden, um abgeschnittene Bereiche zu verstecken */
+      transform: scale(1.5);
     }
 
     .image {
       width: 50%;
+      object-fit: cover; /* Bilder skalieren, um den Container zu füllen */
     }
 
     .timestamp {
@@ -75,7 +79,7 @@
         img.onerror = function() {
           console.log('Fehler beim Laden des Bildes von ' + url + '. Versuche es mit dem Bild von vor 10 Minuten.');
           timestamp = getPreviousTimestamp(timestamp); // timestamp für beide Bilder aktualisieren
-          let newUrl = createImageUrl(timestamp, cam)  + '?t=' + Date.now();
+          let newUrl = createImageUrl(timestamp, cam) + '?t=' + Date.now();
           console.log('newUrl: ' + newUrl);
           loadImage(img, newUrl, cam, callback); // Rekursiver Aufruf mit neuer URL
         };
