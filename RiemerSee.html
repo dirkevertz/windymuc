@@ -1,132 +1,174 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-  <title>Webcam Riemer See</title>
-  <style>
-    .container {
-      position: relative;
-      display: flex; 
-    }
-
-    .image-container {
-      transform: scale(1.95);
-      object-fit: cover;
-    }
-
-    .image {
-      width: 50%;
-    }
-
-    .timestamp-container {
-      position: fixed;
-      top: 10px; 
-      right: 10px;
-      z-index: 1;
-    }
-
-    .timestamp {
-      background-color: rgba(0, 0, 0, 0.5);
-      color: white;
-      padding: 5px;
-      font-family: monospace;
-      display: inline-block;
-    }
-  </style>
-</head>
-
-<body>
-
-  <div class="container"> 
-    <div class="timestamp-container">
-      <div class="timestamp" id="timestamp"></div>
-    </div>
-    <div class="image-container"> 
-      <img class="image" id="imageLeft" src="" alt="Bild links">
-      <img class="image" id="imageRight" src="" alt="Bild rechts">
-    </div>
-  </div>
-
-  <script>
-    function createImageUrl(date, cam) {
-      let dateString = date.getFullYear() + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + ('0' + date.getDate()).slice(-2);
-      let timeString = ('0' + date.getHours()).slice(-2) + '-' + ('0' + date.getMinutes()).slice(-2) + '-00';
-      return 'https://panodata9.panomax.com/cams/2027/' + dateString + '/' + timeString + '_h2800_' + cam + '_0.jpg';
-    }
-
-    function updateImages() {
-      let now = new Date();
-      let minutes = Math.floor(now.getMinutes() / 10) * 10;
-      now.setMinutes(minutes, 0, 0);
-      timestamp = new Date(now.getTime());
-      let urlLeft = createImageUrl(timestamp, 9);
-      let urlRight = createImageUrl(timestamp, 10);
-      loadImages(urlLeft, urlRight);
-    }
-
-    function loadImages(urlLeft, urlRight) {
-      let imgLeft = new Image();
-      let imgRight = new Image();
-
-      function loadImage(img, url, cam, callback) {
-        img.onload = function () {
-          callback(url);
-        };
-
-        img.onerror = function () {
-          console.log('Fehler beim Laden des Bildes von ' + url + '. Versuche es mit dem Bild von vor 10 Minuten.');
-          timestamp = getPreviousTimestamp(timestamp);
-          let newUrl = createImageUrl(timestamp, cam) + '?t=' + Date.now();
-          console.log('newUrl: ' + newUrl);
-          loadImage(img, newUrl, cam, callback);
-        };
-
-        img.src = url;
+  <head>
+    <title>Webcam Riemer See</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        margin: 0;
+        /* Entferne Standard-Margins */
       }
 
-      loadImage(imgLeft, urlLeft, 9, function (finalUrlLeft) {
-        loadImage(imgRight, createImageUrl(timestamp, 10), 10, function (finalUrlRight) {
-          replaceImage('imageLeft', finalUrlLeft);
-          replaceImage('imageRight', finalUrlRight);
-          updateTimestamp(timestamp);
+      .container {
+        display: flex;
+        flex-direction: column;
+        /* Bilder vertikal auf mobilen Geräten */
+      }
+
+      .image-container {
+        width: 100%;
+        /* Nutze die volle Bildschirmbreite */
+        overflow: hidden;
+        /* Verhindert, dass Bilder über den Container hinausragen */
+        transform: scale(1.93);
+      }
+
+      .image {
+        width: 50%;
+        /* Bilder passen sich der Containerbreite an */
+        height: auto;
+        /* Behält das Seitenverhältnis bei */
+      }
+
+      .timestamp-container {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        padding: 5px;
+        font-family: monospace;
+        display: inline-block;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="image-container">
+        <img class="image" id="imageLeft" src="" alt="Bild links" />
+        <img class="image" id="imageRight" src="" alt="Bild rechts" />
+      </div>
+      <div class="timestamp-container">
+        <div class="timestamp" id="timestamp"></div>
+      </div>
+    </div>
+
+    <script>
+      function createImageUrl(date, cam) {
+        let dateString =
+          date.getFullYear() +
+          "/" +
+          ("0" + (date.getMonth() + 1)).slice(-2) +
+          "/" +
+          ("0" + date.getDate()).slice(-2);
+        let timeString =
+          ("0" + date.getHours()).slice(-2) +
+          "-" +
+          ("0" + date.getMinutes()).slice(-2) +
+          "-00";
+        return (
+          "https://panodata9.panomax.com/cams/2027/" +
+          dateString +
+          "/" +
+          timeString +
+          "_h2800_" +
+          cam +
+          "_0.jpg"
+        );
+      }
+
+      function updateImages() {
+        let now = new Date();
+        let minutes = Math.floor(now.getMinutes() / 10) * 10;
+        now.setMinutes(minutes, 0, 0);
+        timestamp = new Date(now.getTime());
+        let urlLeft = createImageUrl(timestamp, 9);
+        let urlRight = createImageUrl(timestamp, 10);
+        loadImages(urlLeft, urlRight);
+      }
+
+      function loadImages(urlLeft, urlRight) {
+        let imgLeft = new Image();
+        let imgRight = new Image();
+
+        function loadImage(img, url, cam, callback) {
+          img.onload = function () {
+            callback(url);
+          };
+
+          img.onerror = function () {
+            console.log(
+              "Fehler beim Laden des Bildes von " +
+                url +
+                ". Versuche es mit dem Bild von vor 10 Minuten."
+            );
+            timestamp = getPreviousTimestamp(timestamp);
+            let newUrl = createImageUrl(timestamp, cam) + "?t=" + Date.now();
+            console.log("newUrl: " + newUrl);
+            loadImage(img, newUrl, cam, callback);
+          };
+
+          img.src = url;
+        }
+
+        loadImage(imgLeft, urlLeft, 9, function (finalUrlLeft) {
+          loadImage(
+            imgRight,
+            createImageUrl(timestamp, 10),
+            10,
+            function (finalUrlRight) {
+              replaceImage("imageLeft", finalUrlLeft);
+              replaceImage("imageRight", finalUrlRight);
+              updateTimestamp(timestamp);
+            }
+          );
         });
-      });
-    }
-
-    function replaceImage(imageId, imageUrl) {
-      var parentNode = document.getElementById(imageId).parentNode;
-      var oldImage = document.getElementById(imageId);
-      if (oldImage) {
-        oldImage.parentNode.removeChild(oldImage);
       }
-      var newImage = document.createElement('img');
-      newImage.src = imageUrl;
-      newImage.classList.add('image');
-      newImage.id = imageId;
-      parentNode.appendChild(newImage);
-    }
 
-    function updateTimestamp(date) {
-      let dateString = date.getFullYear() + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + ('0' + date.getDate()).slice(-2);
-      let timeString = ('0' + date.getHours()).slice(-2) + '-' + ('0' + date.getMinutes()).slice(-2) + '-00';
-      document.getElementById('timestamp').textContent = dateString + ' ' + timeString;
-    }
+      function replaceImage(imageId, imageUrl) {
+        var parentNode = document.getElementById(imageId).parentNode;
+        var oldImage = document.getElementById(imageId);
+        if (oldImage) {
+          oldImage.parentNode.removeChild(oldImage);
+        }
+        var newImage = document.createElement("img");
+        newImage.src = imageUrl;
+        newImage.classList.add("image");
+        newImage.id = imageId;
+        parentNode.appendChild(newImage);
+      }
 
-    function getPreviousTimestamp(date) {
-      let newDate = new Date(date.getTime());
-      let minutes = newDate.getMinutes();
-      minutes = Math.floor(minutes / 10) * 10 - 10;
-      newDate.setMinutes(minutes, 0, 0);
-      return newDate;
-    }
+      function updateTimestamp(date) {
+        let dateString =
+          date.getFullYear() +
+          "/" +
+          ("0" + (date.getMonth() + 1)).slice(-2) +
+          "/" +
+          ("0" + date.getDate()).slice(-2);
+        let timeString =
+          ("0" + date.getHours()).slice(-2) +
+          "-" +
+          ("0" + date.getMinutes()).slice(-2) +
+          "-00";
+        document.getElementById("timestamp").textContent =
+          dateString + " " + timeString;
+      }
 
-    let timestamp;
+      function getPreviousTimestamp(date) {
+        let newDate = new Date(date.getTime());
+        let minutes = newDate.getMinutes();
+        minutes = Math.floor(minutes / 10) * 10 - 10;
+        newDate.setMinutes(minutes, 0, 0);
+        return newDate;
+      }
 
-    updateImages();
+      let timestamp;
 
-    setInterval(updateImages, 60000);
-  </script>
+      updateImages();
 
-</body>
-
+      setInterval(updateImages, 60000);
+    </script>
+  </body>
 </html>
