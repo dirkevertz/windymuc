@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Webcam Bilder</title>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.body.style.zoom = "150%";
+  });
+</script>
+<style>
+  .container {
+    display: flex;
+    position: relative;
+  }
+  .image {
+    width: 50%;
+  }
+  .timestamp {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 5px;
+    font-family: monospace;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <img class="image" id="imageLeft" src="" alt="Bild links">
+  <img class="image" id="imageRight" src="" alt="Bild rechts">
+  <div class="timestamp" id="timestamp"></div>
+</div>
+
+<script>
+function updateImages() {
+  // Aktuelles Datum und Zeit abrufen
+  let now = new Date();
+
+  // Minuten auf den nächsten 10-Minuten-Takt abrunden
+  let minutes = Math.floor(now.getMinutes() / 10) * 10;
+  now.setMinutes(minutes, 0, 0);
+
+  // Funktion zum Erstellen der Bild-URL
+  function createImageUrl(date, time, cam) {
+    let dateString = date.getFullYear() + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + ('0' + date.getDate()).slice(-2);
+    let timeString = ('0' + date.getHours()).slice(-2) + '-' + ('0' + time.getMinutes()).slice(-2) + '-00';
+    return 'https://panodata9.panomax.com/cams/2027/' + dateString + '/' + timeString + '_h2800_' + cam + '_0.jpg';
+  }
+
+  // URLs der Bilder erstellen
+  let urlLeft = createImageUrl(now, now, 9);
+  let urlRight = createImageUrl(now, now, 10);
+
+  // Bilder laden und auf Fehler prüfen
+  loadImages(urlLeft, urlRight, now, minutes);
+}
+
+function loadImages(urlLeft, urlRight, now, minutes) {
+  let imgLeft = new Image();
+  let imgRight = new Image();
+
+  imgLeft.onload = function() {
+    document.getElementById('imageLeft').src = urlLeft;
+  };
+
+  imgLeft.onerror = function() {
+    console.log('Fehler beim Laden des linken Bildes. Versuche es mit dem Bild von vor 10 Minuten.');
+    now.setMinutes(minutes - 10);
+    let newUrlLeft = createImageUrl(now, now, 9);
+    document.getElementById('imageLeft').src = newUrlLeft;
+  };
+
+  imgRight.onload = function() {
+    document.getElementById('imageRight').src = urlRight;
+  };
+
+  imgRight.onerror = function() {
+    console.log('Fehler beim Laden des rechten Bildes. Versuche es mit dem Bild von vor 10 Minuten.');
+    now.setMinutes(minutes - 10);
+    let newUrlRight = createImageUrl(now, now, 10);
+    document.getElementById('imageRight').src = newUrlRight;
+  };
+
+  imgLeft.src = urlLeft;
+  imgRight.src = urlRight;
+
+  // Zeitstempel aktualisieren
+  let dateString = now.getFullYear() + '/' + ('0' + (now.getMonth() + 1)).slice(-2) + '/' + ('0' + now.getDate()).slice(-2);
+  let timeString = ('0' + now.getHours()).slice(-2) + '-' + ('0' + minutes).slice(-2) + '-00';
+  document.getElementById('timestamp').textContent = dateString + ' ' + timeString;
+}
+
+// Bilder beim Laden der Seite aktualisieren
+updateImages();
+
+// Bilder alle 10 Minuten aktualisieren
+setInterval(updateImages, 600000);
+</script>
+
+</body>
+</html>
