@@ -36,6 +36,13 @@
   </div>
 
   <script>
+    // Funktion zum Erstellen der Bild-URL (jetzt außerhalb von updateImages)
+    function createImageUrl(date, time, cam) {
+      let dateString = date.getFullYear() + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + ('0' + date.getDate()).slice(-2);
+      let timeString = ('0' + time.getHours()).slice(-2) + '-' + ('0' + time.getMinutes()).slice(-2) + '-00';
+      return 'https://panodata9.panomax.com/cams/2027/' + dateString + '/' + timeString + '_h2800_' + cam + '_0.jpg';
+    }
+
     function updateImages() {
       // Aktuelles Datum und Zeit abrufen
       let now = new Date();
@@ -43,13 +50,6 @@
       // Minuten auf den nächsten 10-Minuten-Takt abrunden
       let minutes = Math.floor(now.getMinutes() / 10) * 10;
       now.setMinutes(minutes, 0, 0);
-
-      // Funktion zum Erstellen der Bild-URL
-      function createImageUrl(date, time, cam) {
-        let dateString = date.getFullYear() + '/' + ('0' + (date.getMonth() + 1)).slice(-2) + '/' + ('0' + date.getDate()).slice(-2);
-        let timeString = ('0' + time.getHours()).slice(-2) + '-' + ('0' + time.getMinutes()).slice(-2) + '-00';
-        return 'https://panodata9.panomax.com/cams/2027/' + dateString + '/' + timeString + '_h2800_' + cam + '_0.jpg';
-      }
 
       // URLs der Bilder erstellen (Korrektur: now als date, now mit korrigierten Minuten als time)
       let urlLeft = createImageUrl(now, now, 9);
