@@ -13,7 +13,8 @@
         display: flex;
         flex-direction: column;
         /* Bilder vertikal auf mobilen Geräten */
-        position: relative; /* Damit das Chart innerhalb des Containers positioniert werden kann */
+        position: static; /* Damit das Chart innerhalb des Containers positioniert werden kann */
+        width: 100%;
       }
 
       .chart-container {
@@ -25,6 +26,12 @@
         z-index: 2;
         /* Hintergrund transparent machen */
         background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+      }
+
+      .chart-container canvas {
+        width: 100%;
       }
 
       .image-container {
@@ -53,24 +60,68 @@
         font-family: monospace;
         display: inline-block;
       }
+
+      /* Hinweis für Mobilgeräte */
+      .orientation-hint {
+        display: none; /* Standardmäßig ausblenden */
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px 20px;
+        z-index: 10; /* Sicherstellen, dass der Hinweis über anderen Elementen liegt */
+        text-align: center;
+      }
+
+      /* Hinweis anzeigen, wenn die Bildschirmbreite kleiner als 600px ist */
+      @media (max-width: 600px) {
+        .orientation-hint {
+          display: block;
+        }
+      }
     </style>
   </head>
 
   <body>
+    <div class="orientation-hint">
+      Bitte drehen Sie Ihr Gerät für eine optimale Darstellung.
+    </div>
     <div class="container">
       <div class="image-container">
         <img class="image" id="imageLeft" src="" alt="Bild links" />
         <img class="image" id="imageRight" src="" alt="Bild rechts" />
       </div>
+      <div class="timestamp-container">
+        <div class="timestamp" id="automodus"></div>
+        <div class="timestamp" id="timestamp"></div>
+      </div>
       <div class="chart-container">
         <canvas id="myChart"></canvas>
-      </div>
-      <div class="timestamp-container">
-        <div class="timestamp" id="timestamp"></div>
       </div>
     </div>
 
     <script>
+      function checkOrientation() {
+        if (window.innerWidth < window.innerHeight) {
+          // Gerät ist im Hochformat
+          document.getElementById("orientation-hint").style.display = "block";
+        } else {
+          // Gerät ist im Querformat
+          document.getElementById("orientation-hint").style.display = "none";
+        }
+      }
+
+      const timestampElement = document.getElementById("timestamp");
+      timestampElement.addEventListener("click", function () {
+        showData(null);
+      });
+
+      // Hinweis beim Laden der Seite und bei Änderung der Ausrichtung überprüfen
+      window.addEventListener("load", checkOrientation);
+      window.addEventListener("orientationchange", checkOrientation);
+
       function createImageUrl(date, cam) {
         let dateString =
           date.getFullYear() +
@@ -95,13 +146,13 @@
       }
 
       function updateImages() {
-        let now = new Date();
-        let minutes = Math.floor(now.getMinutes() / 10) * 10;
-        now.setMinutes(minutes, 0, 0);
-        timestamp = new Date(now.getTime());
+        if (auto == true) timestamp = new Date();
+        let minutes = Math.floor(timestamp.getMinutes() / 10) * 10; // auf 10er Minuten gehen
+        timestamp.setMinutes(minutes, 0, 0);
         let urlLeft = createImageUrl(timestamp, 9);
         let urlRight = createImageUrl(timestamp, 10);
         loadImages(urlLeft, urlRight);
+        updateTimestamp();
       }
 
       function loadImages(urlLeft, urlRight) {
@@ -167,8 +218,12 @@
           "-" +
           ("0" + date.getMinutes()).slice(-2) +
           "-00";
+
+        // Stern anzeigen, wenn auto false ist
+        let star = auto ? "" : "*";
+
         document.getElementById("timestamp").textContent =
-          dateString + " " + timeString;
+          dateString + " " + timeString + star;
       }
 
       function getPreviousTimestamp(date) {
@@ -179,7 +234,8 @@
         return newDate;
       }
 
-      let timestamp;
+      let timestamp = new Date();
+      let auto = true;
 
       updateImages();
 
@@ -235,6 +291,7 @@
                 ],
               },
               options: {
+                width: window.innerWidth,
                 scales: {
                   x: {
                     type: "category",
@@ -272,11 +329,13 @@
 
       // Funktion zum Anzeigen der Daten
       function showData(date) {
-        timestamp = date;
-        let urlLeft = createImageUrl(timestamp, 9);
-        let urlRight = createImageUrl(timestamp, 10);
-        //alert("Datum und Uhrzeit des Datenpunkts: " + date.toLocaleString() + ", " + urlLeft);
-        loadImages(urlLeft, urlRight);
+        if (date != null)
+          timestamp = date;
+
+        if (auto == false) auto = true;
+        else auto = false;
+
+        updateImages();
       }
     </script>
   </body>
