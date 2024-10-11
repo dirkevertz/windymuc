@@ -23,6 +23,7 @@
         left: 0;
         width: 100%;
         height: 40%; /* Chart nimmt 1/3 der Bildhöhe ein */
+        z-index: 4;
         /* Hintergrund transparent machen */
         background-color: rgba(255, 255, 255, 0.8);
         display: flex;
@@ -54,6 +55,7 @@
         position: absolute;
         top: 10px;
         right: 10px;
+        z-index: 3;
         background-color: rgba(0, 0, 0, 0.5);
         color: white;
         padding: 5px;
@@ -71,6 +73,7 @@
         background-color: rgba(0, 0, 0, 0.7);
         color: white;
         padding: 10px 20px;
+        z-index: 10; /* Sicherstellen, dass der Hinweis über anderen Elementen liegt */
         text-align: center;
       }
 
@@ -304,21 +307,13 @@
                     },
                   },
                 },
-
-                events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'], // Wichtig für Touch-Events
-                onClick: function(evt) {
-                  let x, y;
-                  if (evt.type === 'touchstart') {
-                    const touch = evt.touches[0];
-                    const rect = this.canvas.getBoundingClientRect();
-                    x = touch.clientX - rect.left;
-                    y = touch.clientY - rect.top;
-                  } else {
-                    x = evt.offsetX;
-                    y = evt.offsetY;
-                  }
-
-                  const activePoints = this.getElementsAtEventForMode({x, y}, 'nearest', { intersect: true }, false);
+                onClick: function (e) {
+                  const activePoints = this.getElementsAtEventForMode(
+                    e,
+                    "nearest",
+                    { intersect: true },
+                    false
+                  );
                   if (activePoints.length) {
                     const firstPoint = activePoints[0];
                     const label = this.data.labels[firstPoint.index];
@@ -337,9 +332,7 @@
                       showData(date);
                     }
                   }
-                  else
-                    alert("no active point");
-                }
+                },
               },
             });
           });
