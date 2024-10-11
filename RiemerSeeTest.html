@@ -305,7 +305,6 @@
                   },
                 },
                 onClick: function (e) {
-                  alert("hallo");
                   const activePoints = this.getElementsAtEventForMode(
                     e,
                     "nearest",
@@ -330,6 +329,8 @@
                       showData(date);
                     }
                   }
+                  else
+                    alert("no active point");
                 },
               },
             });
