@@ -40,6 +40,7 @@
         overflow: hidden;
         /* Verhindert, dass Bilder über den Container hinausragen */
         transform: scale(1.93);
+        clip-path: polygon(20% 10%, 80% 10%, 80% 90%, 20% 90%); /* Beispiel: Ausschnitt in Form eines Trapezes */
       }
 
       .image {
@@ -187,7 +188,7 @@
             function (finalUrlRight) {
               replaceImage("imageLeft", finalUrlLeft);
               replaceImage("imageRight", finalUrlRight);
-              updateTimestamp(timestamp);
+              updateTimestamp();
             }
           );
         });
@@ -206,17 +207,17 @@
         parentNode.appendChild(newImage);
       }
 
-      function updateTimestamp(date) {
+      function updateTimestamp() {
         let dateString =
-          date.getFullYear() +
+          timestamp.getFullYear() +
           "/" +
-          ("0" + (date.getMonth() + 1)).slice(-2) +
+          ("0" + (timestamp.getMonth() + 1)).slice(-2) +
           "/" +
-          ("0" + date.getDate()).slice(-2);
+          ("0" + timestamp.getDate()).slice(-2);
         let timeString =
-          ("0" + date.getHours()).slice(-2) +
+          ("0" + timestamp.getHours()).slice(-2) +
           "-" +
-          ("0" + date.getMinutes()).slice(-2) +
+          ("0" + timestamp.getMinutes()).slice(-2) +
           "-00";
 
         // Stern anzeigen, wenn auto false ist
@@ -319,7 +320,14 @@
                       ];
 
                     // Hier wird die Funktion aufgerufen, die Datum und Uhrzeit verarbeitet
-                    showData(new Date(value.x));
+                    const regex = /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/;
+                    const match = value.x.match(regex);
+
+                    if (match) {
+                      const [, day, month, year, hours, minutes, seconds] = match;
+                      const date = new Date(year, month - 1, day, hours, minutes, seconds);
+                      showData(date);
+                    }
                   }
                 },
               },
