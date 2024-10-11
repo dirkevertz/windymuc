@@ -304,13 +304,21 @@
                     },
                   },
                 },
-                onClick: function (e) {
-                  const activePoints = this.getElementsAtEventForMode(
-                    e,
-                    "nearest",
-                    { intersect: true },
-                    false
-                  );
+
+                events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'], // Wichtig für Touch-Events
+                onClick: function(evt) {
+                  let x, y;
+                  if (evt.type === 'touchstart') {
+                    const touch = evt.touches[0];
+                    const rect = this.canvas.getBoundingClientRect();
+                    x = touch.clientX - rect.left;
+                    y = touch.clientY - rect.top;
+                  } else {
+                    x = evt.offsetX;
+                    y = evt.offsetY;
+                  }
+
+                  const activePoints = this.getElementsAtEventForMode({x, y}, 'nearest', { intersect: true }, false);
                   if (activePoints.length) {
                     const firstPoint = activePoints[0];
                     const label = this.data.labels[firstPoint.index];
@@ -331,7 +339,7 @@
                   }
                   else
                     alert("no active point");
-                },
+                }
               },
             });
           });
