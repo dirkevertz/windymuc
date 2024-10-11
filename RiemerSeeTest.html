@@ -32,7 +32,7 @@
 
       .chart-container canvas {
         width: 100%;
-        height: auto
+        height: auto;
       }
 
       .image-container {
@@ -41,7 +41,12 @@
         overflow: hidden;
         /* Verhindert, dass Bilder über den Container hinausragen */
         transform: scale(1.93);
-        clip-path: polygon(20% 10%, 80% 10%, 80% 90%, 20% 90%); /* Beispiel: Ausschnitt in Form eines Trapezes */
+        clip-path: polygon(
+          20% 10%,
+          80% 10%,
+          80% 90%,
+          20% 90%
+        ); /* Beispiel: Ausschnitt in Form eines Trapezes */
       }
 
       .image {
@@ -307,32 +312,6 @@
                     },
                   },
                 },
-                ontouchstart: function (e) {
-                  const activePoints = this.getElementsAtEventForMode(
-                    e,
-                    "nearest",
-                    { intersect: true },
-                    false
-                  );
-                  if (activePoints.length) {
-                    const firstPoint = activePoints[0];
-                    const label = this.data.labels[firstPoint.index];
-                    const value =
-                      this.data.datasets[firstPoint.datasetIndex].data[
-                        firstPoint.index
-                      ];
-
-                    // Hier wird die Funktion aufgerufen, die Datum und Uhrzeit verarbeitet
-                    const regex = /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/;
-                    const match = value.x.match(regex);
-
-                    if (match) {
-                      const [, day, month, year, hours, minutes, seconds] = match;
-                      const date = new Date(year, month - 1, day, hours, minutes, seconds);
-                      showData(date);
-                    }
-                  }
-                },
                 onClick: function (e) {
                   const activePoints = this.getElementsAtEventForMode(
                     e,
@@ -349,27 +328,67 @@
                       ];
 
                     // Hier wird die Funktion aufgerufen, die Datum und Uhrzeit verarbeitet
-                    const regex = /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/;
+                    const regex =
+                      /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/;
                     const match = value.x.match(regex);
 
                     if (match) {
-                      const [, day, month, year, hours, minutes, seconds] = match;
-                      const date = new Date(year, month - 1, day, hours, minutes, seconds);
+                      const [, day, month, year, hours, minutes, seconds] =
+                        match;
+                      const date = new Date(
+                        year,
+                        month - 1,
+                        day,
+                        hours,
+                        minutes,
+                        seconds
+                      );
                       showData(date);
                     }
                   }
                 },
               },
             });
+            chartContainer.addEventListener("click touchend", function (e) {
+              const activePoints = myChart.getElementsAtEventForMode(
+                e,
+                "nearest",
+                { intersect: true },
+                false
+              );
+              if (activePoints.length) {
+                const firstPoint = activePoints[0];
+                const label = myChart.data.labels[firstPoint.index];
+                const value =
+                  myChart.data.datasets[firstPoint.datasetIndex].data[
+                    firstPoint.index
+                  ];
+                // Hier wird die Funktion aufgerufen, die Datum und Uhrzeit verarbeitet
+                const regex =
+                  /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/;
+                const match = value.x.match(regex);
+
+                if (match) {
+                  const [, day, month, year, hours, minutes, seconds] = match;
+                  const date = new Date(
+                    year,
+                    month - 1,
+                    day,
+                    hours,
+                    minutes,
+                    seconds
+                  );
+                  showData(date);
+                }
+              }
+            });
           });
       });
 
       // Funktion zum Anzeigen der Daten
       function showData(date) {
-        if (date != null)
-          timestamp = date;
+        if (date != null) timestamp = date;
 
-        alert(date);
         if (auto == false) auto = true;
         else auto = false;
 
