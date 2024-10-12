@@ -1,20 +1,12 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Webcam Riemer See</title>
+    <title>v1</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
       body {
         margin: 0;
         /* Entferne Standard-Margins */
-      }
-
-      .container {
-        display: flex;
-        flex-direction: column;
-        /* Bilder vertikal auf mobilen Geräten */
-        position: static; /* Damit das Chart innerhalb des Containers positioniert werden kann */
-        width: 100%;
       }
 
       .chart-container {
@@ -28,39 +20,6 @@
         background-color: rgba(255, 255, 255, 0.8);
         display: flex;
         justify-content: center;
-      }
-
-      .chart-container canvas {
-        width: 100%;
-        height: auto
-      }
-
-      .image-container {
-        width: 100%;
-        /* Nutze die volle Bildschirmbreite */
-        overflow: hidden;
-        /* Verhindert, dass Bilder über den Container hinausragen */
-        transform: scale(1.93);
-        clip-path: polygon(20% 10%, 80% 10%, 80% 90%, 20% 90%); /* Beispiel: Ausschnitt in Form eines Trapezes */
-      }
-
-      .image {
-        width: 50%;
-        /* Bilder passen sich der Containerbreite an */
-        height: auto;
-        /* Behält das Seitenverhältnis bei */
-      }
-
-      .timestamp-container {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        z-index: 3;
-        background-color: rgba(0, 0, 0, 0.5);
-        color: white;
-        padding: 5px;
-        font-family: monospace;
-        display: inline-block;
       }
     </style>
   </head>
