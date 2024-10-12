@@ -31,7 +31,7 @@
       }
 
       .chart-container canvas {
-        width: 100%;
+        width: 80%;
         height: auto;
       }
 
@@ -57,7 +57,7 @@
       }
 
       .timestamp-container {
-        position: absolute;
+        position: fixed;
         top: 10px;
         right: 10px;
         z-index: 3;
@@ -95,6 +95,7 @@
     <div class="orientation-hint">
       Bitte drehen Sie Ihr Gerät für eine optimale Darstellung.
     </div>
+    <div>
     <div class="container">
       <div class="image-container">
         <img class="image" id="imageLeft" src="" alt="Bild links" />
@@ -356,10 +357,12 @@
       // Funktion zum Anzeigen der Daten
       function showData(date) {
         //alert(date);
-        if (date != null) timestamp = date;
-
-        if (auto == false) auto = true;
-        else auto = false;
+        if (date != null) {
+          timestamp = date;
+          auto = false;
+        }
+        else
+          auto = true;
 
         updateImages();
       }
