@@ -332,8 +332,9 @@
                   ];
                 alert(`Label: ${label}, Wert: ${value}`);
                 // Hier wird die Funktion aufgerufen, die Datum und Uhrzeit verarbeitet
+                // Hier wird die Funktion aufgerufen, die Datum und Uhrzeit verarbeitet
                 const regex =
-                  /(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/;
+                  /(\d{2})[\/\.](\d{2})[\/\.](\d{4}), (\d{2}):(\d{2}):(\d{2})/;
                 const match = label.match(regex);
 
                 if (match) {
