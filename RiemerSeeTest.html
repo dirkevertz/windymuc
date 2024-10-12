@@ -62,77 +62,15 @@
         font-family: monospace;
         display: inline-block;
       }
-
-      /* Hinweis für Mobilgeräte */
-      .orientation-hint {
-        display: none; /* Standardmäßig ausblenden */
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 10px 20px;
-        z-index: 10; /* Sicherstellen, dass der Hinweis über anderen Elementen liegt */
-        text-align: center;
-      }
-
-      /* Hinweis anzeigen, wenn die Bildschirmbreite kleiner als 600px ist */
-      @media (max-width: 600px) {
-        .orientation-hint {
-          display: block;
-        }
-      }
     </style>
   </head>
 
   <body>
-    <div class="orientation-hint">
-      Bitte drehen Sie Ihr Gerät für eine optimale Darstellung.
-    </div>
     <div class="chart-container">x
       <canvas id="myChart"></canvas>
     </div>
     </div>
 
-    <script>
-      function checkOrientation() {
-        if (window.innerWidth < window.innerHeight) {
-          // Gerät ist im Hochformat
-          document.getElementById("orientation-hint").style.display = "block";
-        } else {
-          // Gerät ist im Querformat
-          document.getElementById("orientation-hint").style.display = "none";
-        }
-      }
-
-      // Hinweis beim Laden der Seite und bei Änderung der Ausrichtung überprüfen
-      window.addEventListener("load", checkOrientation);
-      window.addEventListener("orientationchange", checkOrientation);
-
-      function createImageUrl(date, cam) {
-        let dateString =
-          date.getFullYear() +
-          "/" +
-          ("0" + (date.getMonth() + 1)).slice(-2) +
-          "/" +
-          ("0" + date.getDate()).slice(-2);
-        let timeString =
-          ("0" + date.getHours()).slice(-2) +
-          "-" +
-          ("0" + date.getMinutes()).slice(-2) +
-          "-00";
-        return (
-          "https://panodata9.panomax.com/cams/2027/" +
-          dateString +
-          "/" +
-          timeString +
-          "_h2800_" +
-          cam +
-          "_0.jpg"
-        );
-      }
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
