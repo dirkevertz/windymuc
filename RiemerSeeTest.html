@@ -19,7 +19,7 @@
 
       .chart-container {
         position: fixed;
-        top: 0; /* Chart am unteren Rand andocken */
+        bottom: 0; /* Chart am unteren Rand andocken */
         left: 0;
         width: 100%;
         height: 40%; /* Chart nimmt 1/3 der Bildhöhe ein */
@@ -90,18 +90,9 @@
     <div class="orientation-hint">
       Bitte drehen Sie Ihr Gerät für eine optimale Darstellung.
     </div>
-    <div class="chart-container">
+    <div class="chart-container">x
       <canvas id="myChart"></canvas>
     </div>
-    <div class="container">
-      <div class="image-container">
-        <img class="image" id="imageLeft" src="" alt="Bild links" />
-        <img class="image" id="imageRight" src="" alt="Bild rechts" />
-      </div>
-      <div class="timestamp-container">
-        <div class="timestamp" id="automodus"></div>
-        <div class="timestamp" id="timestamp"></div>
-      </div>
     </div>
 
     <script>
@@ -114,11 +105,6 @@
           document.getElementById("orientation-hint").style.display = "none";
         }
       }
-
-      const timestampElement = document.getElementById("timestamp");
-      timestampElement.addEventListener("click", function () {
-        showData(null);
-      });
 
       // Hinweis beim Laden der Seite und bei Änderung der Ausrichtung überprüfen
       window.addEventListener("load", checkOrientation);
@@ -146,102 +132,6 @@
           "_0.jpg"
         );
       }
-
-      function updateImages() {
-        if (auto == true) timestamp = new Date();
-        let minutes = Math.floor(timestamp.getMinutes() / 10) * 10; // auf 10er Minuten gehen
-        timestamp.setMinutes(minutes, 0, 0);
-        let urlLeft = createImageUrl(timestamp, 9);
-        let urlRight = createImageUrl(timestamp, 10);
-        loadImages(urlLeft, urlRight);
-        updateTimestamp();
-      }
-
-      function loadImages(urlLeft, urlRight) {
-        let imgLeft = new Image();
-        let imgRight = new Image();
-
-        function loadImage(img, url, cam, callback) {
-          img.onload = function () {
-            callback(url);
-          };
-
-          img.onerror = function () {
-            console.log(
-              "Fehler beim Laden des Bildes von " +
-                url +
-                ". Versuche es mit dem Bild von vor 10 Minuten."
-            );
-            timestamp = getPreviousTimestamp(timestamp);
-            let newUrl = createImageUrl(timestamp, cam) + "?t=" + Date.now();
-            console.log("newUrl: " + newUrl);
-            loadImage(img, newUrl, cam, callback);
-          };
-
-          img.src = url;
-        }
-
-        loadImage(imgLeft, urlLeft, 9, function (finalUrlLeft) {
-          loadImage(
-            imgRight,
-            createImageUrl(timestamp, 10),
-            10,
-            function (finalUrlRight) {
-              replaceImage("imageLeft", finalUrlLeft);
-              replaceImage("imageRight", finalUrlRight);
-              updateTimestamp();
-            }
-          );
-        });
-      }
-
-      function replaceImage(imageId, imageUrl) {
-        var parentNode = document.getElementById(imageId).parentNode;
-        var oldImage = document.getElementById(imageId);
-        if (oldImage) {
-          oldImage.parentNode.removeChild(oldImage);
-        }
-        var newImage = document.createElement("img");
-        newImage.src = imageUrl;
-        newImage.classList.add("image");
-        newImage.id = imageId;
-        parentNode.appendChild(newImage);
-      }
-
-      function updateTimestamp() {
-        let dateString =
-          timestamp.getFullYear() +
-          "/" +
-          ("0" + (timestamp.getMonth() + 1)).slice(-2) +
-          "/" +
-          ("0" + timestamp.getDate()).slice(-2);
-        let timeString =
-          ("0" + timestamp.getHours()).slice(-2) +
-          "-" +
-          ("0" + timestamp.getMinutes()).slice(-2) +
-          "-00";
-
-        // Stern anzeigen, wenn auto false ist
-        let star = auto ? "" : "*";
-
-        document.getElementById("timestamp").textContent =
-          dateString + " " + timeString + star;
-      }
-
-      function getPreviousTimestamp(date) {
-        let newDate = new Date(date.getTime());
-        let minutes = newDate.getMinutes();
-        minutes = Math.floor(minutes / 10) * 10 - 10;
-        newDate.setMinutes(minutes, 0, 0);
-        return newDate;
-      }
-
-      let timestamp = new Date();
-      let auto = true;
-
-      updateImages();
-
-      setInterval(updateImages, 60000);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -347,13 +237,7 @@
 
       // Funktion zum Anzeigen der Daten
       function showData(date) {
-        if (date != null)
-          timestamp = date;
-
-        if (auto == false) auto = true;
-        else auto = false;
-
-        updateImages();
+        alert(date);
       }
     </script>
   </body>
