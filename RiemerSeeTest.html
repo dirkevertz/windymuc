@@ -293,6 +293,13 @@
                 ],
               },
               options: {
+                events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
+                plugins: {
+                  tooltip: {
+                    // Tooltip will only receive click events
+                    events: ['click']
+                  }
+                },
                 width: window.innerWidth,
                 maintainAspectRatio: false,
                 responsive: true,
