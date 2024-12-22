@@ -5,14 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
       body {
-        margin: 0;
-        /* Entferne Standard-Margins */
+        margin: 0; /* Entferne Standard-Margins */
       }
 
       .container {
         display: flex;
-        flex-direction: column;
-        /* Bilder vertikal auf mobilen Geräten */
+        flex-direction: column; /* Bilder vertikal auf mobilen Geräten */
         position: static; /* Damit das Chart innerhalb des Containers positioniert werden kann */
         width: 100%;
       }
@@ -36,10 +34,8 @@
       }
 
       .image-container {
-        width: 100%;
-        /* Nutze die volle Bildschirmbreite */
-        overflow: hidden;
-        /* Verhindert, dass Bilder über den Container hinausragen */
+        width: 100%; /* Nutze die volle Bildschirmbreite */
+        overflow: hidden; /* Verhindert, dass Bilder über den Container hinausragen */
         transform: scale(1.93);
         clip-path: polygon(
           20% 10%,
@@ -50,10 +46,8 @@
       }
 
       .image {
-        width: 50%;
-        /* Bilder passen sich der Containerbreite an */
-        height: auto;
-        /* Behält das Seitenverhältnis bei */
+        width: 50%; /* Bilder passen sich der Containerbreite an */
+        height: auto; /* Behält das Seitenverhältnis bei */
       }
 
       .timestamp-container {
@@ -88,6 +82,47 @@
           display: block;
         }
       }
+
+      .navigation-buttons {
+        position: fixed;
+        top: 40px; /* Platz für den Timestamp lassen */
+        left: 10px;
+        z-index: 3;
+        display: flex;
+      }
+
+      .navigation-button {
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        padding: 5px 10px;
+        margin-right: 5px;
+        border: none;
+        cursor: pointer;
+        font-family: monospace;
+      }
+
+      /* Style für den Kalender-Button */
+      #calendarButton {
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        padding: 5px 10px;
+        border: none;
+        cursor: pointer;
+        font-family: monospace;
+        margin-left: 5px; /* Abstand zum Timestamp */
+      }
+
+      /* Style für den Kalender */
+      #calendar {
+        position: fixed;
+        top: 70px; /* Unterhalb der Buttons */
+        left: 10px;
+        z-index: 4; /* Über den anderen Elementen */
+        background-color: white;
+        border: 1px solid gray;
+        padding: 10px;
+        display: none; /* Standardmäßig versteckt */
+      }
     </style>
   </head>
 
@@ -96,276 +131,326 @@
       Bitte drehen Sie Ihr Gerät für eine optimale Darstellung.
     </div>
     <div>
-    <div class="container">
-      <div class="image-container">
-        <img class="image" id="imageLeft" src="" alt="Bild links" />
-        <img class="image" id="imageRight" src="" alt="Bild rechts" />
+      <div class="container">
+        <div class="image-container">
+          <img class="image" id="imageLeft" src="" alt="Bild links" />
+          <img class="image" id="imageRight" src="" alt="Bild rechts" />
+        </div>
+        <div class="timestamp-container">
+          <div class="timestamp" id="automodus"></div>
+          <div class="timestamp" id="timestamp"></div>
+        </div>
+        <div class="navigation-buttons">
+          <button class="navigation-button" id="previousButton">&lt;</button>
+          <button class="navigation-button" id="nextButton">&gt;</button>
+          <button class="navigation-button" id="calendarButton">
+            &#128197;
+          </button>
+        </div>
+        <div id="calendar"></div>
+        <div class="chart-container">
+          <canvas id="myChart"></canvas>
+        </div>
       </div>
-      <div class="timestamp-container">
-        <div class="timestamp" id="automodus"></div>
-        <div class="timestamp" id="timestamp"></div>
-      </div>
-      <div class="chart-container">
-        <canvas id="myChart"></canvas>
-      </div>
-    </div>
 
-    <script>
-      function checkOrientation() {
-        if (window.innerWidth < window.innerHeight) {
-          // Gerät ist im Hochformat
-          document.getElementById("orientation-hint").style.display = "block";
-        } else {
-          // Gerät ist im Querformat
-          document.getElementById("orientation-hint").style.display = "none";
-        }
-      }
-
-      const timestampElement = document.getElementById("timestamp");
-      timestampElement.addEventListener("click", function () {
-        showData(null);
-      });
-
-      // Hinweis beim Laden der Seite und bei Änderung der Ausrichtung überprüfen
-      window.addEventListener("load", checkOrientation);
-      window.addEventListener("orientationchange", checkOrientation);
-
-      function createImageUrl(date, cam) {
-        let dateString =
-          date.getFullYear() +
-          "/" +
-          ("0" + (date.getMonth() + 1)).slice(-2) +
-          "/" +
-          ("0" + date.getDate()).slice(-2);
-        let timeString =
-          ("0" + date.getHours()).slice(-2) +
-          "-" +
-          ("0" + date.getMinutes()).slice(-2) +
-          "-00";
-        return (
-          "https://panodata9.panomax.com/cams/2027/" +
-          dateString +
-          "/" +
-          timeString +
-          "_h2800_" +
-          cam +
-          "_0.jpg"
-        );
-      }
-
-      function updateImages() {
-        if (auto == true) timestamp = new Date();
-        let minutes = Math.floor(timestamp.getMinutes() / 10) * 10; // auf 10er Minuten gehen
-        timestamp.setMinutes(minutes, 0, 0);
-        let urlLeft = createImageUrl(timestamp, 9);
-        let urlRight = createImageUrl(timestamp, 10);
-        loadImages(urlLeft, urlRight);
-        updateTimestamp();
-      }
-
-      function loadImages(urlLeft, urlRight) {
-        let imgLeft = new Image();
-        let imgRight = new Image();
-
-        function loadImage(img, url, cam, callback) {
-          img.onload = function () {
-            callback(url);
-          };
-
-          img.onerror = function () {
-            console.log(
-              "Fehler beim Laden des Bildes von " +
-                url +
-                ". Versuche es mit dem Bild von vor 10 Minuten."
-            );
-            timestamp = getPreviousTimestamp(timestamp);
-            let newUrl = createImageUrl(timestamp, cam) + "?t=" + Date.now();
-            console.log("newUrl: " + newUrl);
-            loadImage(img, newUrl, cam, callback);
-          };
-
-          img.src = url;
+      <script>
+        function checkOrientation() {
+          if (window.innerWidth < window.innerHeight) {
+            // Gerät ist im Hochformat
+            document.getElementById("orientation-hint").style.display = "block";
+          } else {
+            // Gerät ist im Querformat
+            document.getElementById("orientation-hint").style.display = "none";
+          }
         }
 
-        loadImage(imgLeft, urlLeft, 9, function (finalUrlLeft) {
-          loadImage(
-            imgRight,
-            createImageUrl(timestamp, 10),
-            10,
-            function (finalUrlRight) {
+        const timestampElement = document.getElementById("timestamp");
+        timestampElement.addEventListener("click", function () {
+          showData(null);
+        });
+
+        // Hinweis beim Laden der Seite und bei Änderung der Ausrichtung überprüfen
+        window.addEventListener("load", checkOrientation);
+        window.addEventListener("orientationchange", checkOrientation);
+
+        function createImageUrl(date, cam) {
+          let dateString =
+            date.getFullYear() +
+            "/" +
+            ("0" + (date.getMonth() + 1)).slice(-2) +
+            "/" +
+            ("0" + date.getDate()).slice(-2);
+          let timeString =
+            ("0" + date.getHours()).slice(-2) +
+            "-" +
+            ("0" + date.getMinutes()).slice(-2) +
+            "-00";
+          return (
+            "https://panodata9.panomax.com/cams/2027/" +
+            dateString +
+            "/" +
+            timeString +
+            "_h2800_" +
+            cam +
+            "_0.jpg"
+          );
+        }
+
+        function updateImages() {
+          if (auto == true) timestamp = new Date();
+          let minutes = Math.floor(timestamp.getMinutes() / 10) * 10; // auf 10er Minuten gehen
+          timestamp.setMinutes(minutes, 0, 0);
+          let urlLeft = createImageUrl(timestamp, 9);
+          let urlRight = createImageUrl(timestamp, 10);
+          loadImages(urlLeft, urlRight);
+          updateTimestamp();
+        }
+
+        function loadImages(urlLeft, urlRight) {
+          let imgLeft = new Image();
+          let imgRight = new Image();
+
+          function loadImage(img, url, cam, callback) {
+            img.onload = function () {
+              callback(url);
+            };
+
+            img.onerror = function () {
+              console.log(
+                "Fehler beim Laden des Bildes von " +
+                  url +
+                  ". Versuche es mit dem Bild von vor 10 Minuten."
+              );
+              timestamp = getPreviousTimestamp(timestamp);
+              let newUrl = createImageUrl(timestamp, cam) + "?t=" + Date.now();
+              console.log("newUrl: " + newUrl);
+              loadImage(img, newUrl, cam, callback);
+            };
+
+            img.src = url;
+          }
+
+          loadImage(imgLeft, urlLeft, 9, function (finalUrlLeft) {
+            loadImage(imgRight, createImageUrl(timestamp, 10), 10, function (finalUrlRight) {
               replaceImage("imageLeft", finalUrlLeft);
               replaceImage("imageRight", finalUrlRight);
               updateTimestamp();
-            }
-          );
-        });
-      }
-
-      function replaceImage(imageId, imageUrl) {
-        var parentNode = document.getElementById(imageId).parentNode;
-        var oldImage = document.getElementById(imageId);
-        if (oldImage) {
-          oldImage.parentNode.removeChild(oldImage);
+            });
+          });
         }
-        var newImage = document.createElement("img");
-        newImage.src = imageUrl;
-        newImage.classList.add("image");
-        newImage.id = imageId;
-        parentNode.appendChild(newImage);
-      }
 
-      function updateTimestamp() {
-        let dateString =
-          timestamp.getFullYear() +
-          "/" +
-          ("0" + (timestamp.getMonth() + 1)).slice(-2) +
-          "/" +
-          ("0" + timestamp.getDate()).slice(-2);
-        let timeString =
-          ("0" + timestamp.getHours()).slice(-2) +
-          "-" +
-          ("0" + timestamp.getMinutes()).slice(-2) +
-          "-00";
+        function replaceImage(imageId, imageUrl) {
+          var parentNode = document.getElementById(imageId).parentNode;
+          var oldImage = document.getElementById(imageId);
+          if (oldImage) {
+            oldImage.parentNode.removeChild(oldImage);
+          }
+          var newImage = document.createElement("img");
+          newImage.src = imageUrl;
+          newImage.classList.add("image");
+          newImage.id = imageId;
+          parentNode.appendChild(newImage);
+        }
 
-        // Stern anzeigen, wenn auto false ist
-        let star = auto ? "" : "*";
+        function updateTimestamp() {
+          let dateString =
+            timestamp.getFullYear() +
+            "/" +
+            ("0" + (timestamp.getMonth() + 1)).slice(-2) +
+            "/" +
+            ("0" + timestamp.getDate()).slice(-2);
+          let timeString =
+            ("0" + timestamp.getHours()).slice(-2) +
+            "-" +
+            ("0" + timestamp.getMinutes()).slice(-2) +
+            "-00";
 
-        document.getElementById("timestamp").textContent =
-          dateString + " " + timeString + star;
-      }
+          // Stern anzeigen, wenn auto false ist
+          let star = auto ? "" : "*";
 
-      function getPreviousTimestamp(date) {
-        let newDate = new Date(date.getTime());
-        let minutes = newDate.getMinutes();
-        minutes = Math.floor(minutes / 10) * 10 - 10;
-        newDate.setMinutes(minutes, 0, 0);
-        return newDate;
-      }
+          document.getElementById("timestamp").textContent =
+            dateString + " " + timeString + star;
+        }
 
-      let timestamp = new Date();
-      let auto = true;
+        function getPreviousTimestamp(date) {
+          let newDate = new Date(date.getTime());
+          let minutes = newDate.getMinutes();
+          minutes = Math.floor(minutes / 10) * 10 - 10;
+          newDate.setMinutes(minutes, 0, 0);
+          return newDate;
+        }
 
-      updateImages();
+        function getNextTimestamp(date) {
+          let newDate = new Date(date.getTime());
+          let minutes = newDate.getMinutes();
+          minutes = Math.floor(minutes / 10) * 10 + 10;
+          newDate.setMinutes(minutes, 0, 0);
+          return newDate;
+        }
 
-      setInterval(updateImages, 60000);
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const chartContainer = document.getElementById("myChart");
+        const previousButton = document.getElementById("previousButton");
+        const nextButton = document.getElementById("nextButton");
 
-        fetch(
-          "https://windyapp.co/apiV9.php?method=getMeteostationDataAndInfo&meteostationID=DWD_3379"
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            const windAvg = data.response.data.map((item) => ({
-              x: new Date(item.timestamp * 1000).toLocaleString(),
-              y: item.wind_avg * 3.6, // m/s in km/h umrechnen
-            }));
-            /*
-        const windMin = data.response.data.map(item => ({
-            x: new Date(item.timestamp * 1000).toLocaleString(), 
-            y: item.wind_min * 3.6 // m/s in km/h umrechnen
-        }));*/
-            const windMax = data.response.data.map((item) => ({
-              x: new Date(item.timestamp * 1000).toLocaleString(),
-              y: item.wind_max * 3.6, // m/s in km/h umrechnen
-            }));
+        previousButton.addEventListener("click", function () {
+          auto = false;
+          timestamp = getPreviousTimestamp(timestamp);
+          updateImages();
+        });
 
-            myChart = new Chart(chartContainer, {
-              type: "line",
-              data: {
-                datasets: [
-                  {
-                    label: "Wind Durchschnitt",
-                    data: windAvg,
-                    borderColor: "blue",
-                    fill: false,
-                  },
-                  /*
-              {
-                label: 'Wind Minimum',
-                data: windMin,
-                borderColor: 'green',
-                fill: false
-              },*/
-                  {
-                    label: "Wind Maximum",
-                    data: windMax,
-                    borderColor: "red",
-                    fill: false,
-                  },
-                ],
-              },
-              options: {
-                width: window.innerWidth,
-                maintainAspectRatio: false,
-                responsive: true,
-                scales: {
-                  x: {
-                    type: "category",
-                  },
-                  y: {
-                    title: {
-                      display: true,
-                      text: "Windgeschwindigkeit (km/h)", // Achsenbeschriftung anpassen
+        nextButton.addEventListener("click", function () {
+          auto = false;
+          timestamp = getNextTimestamp(timestamp);
+          updateImages();
+        });
+
+        const calendarButton = document.getElementById("calendarButton");
+        const calendar = document.getElementById("calendar");
+
+        calendarButton.addEventListener("click", function () {
+          // Kalender ein- oder ausblenden
+          if (calendar.style.display === "none") {
+            calendar.style.display = "block";
+          } else {
+            calendar.style.display = "none";
+          }
+        });
+
+        // Kalender initialisieren (hier kannst du eine beliebige Kalenderbibliothek verwenden)
+        // Beispiel mit einem einfachen HTML-Input vom Typ "datetime-local":
+        calendar.innerHTML = `
+                <input type="datetime-local" id="calendarInput" />
+                <button onclick="selectDateTime()">Auswählen</button>
+              `;
+
+        function selectDateTime() {
+          const calendarInput = document.getElementById("calendarInput");
+          const selectedDateTime = new Date(calendarInput.value);
+          showData(selectedDateTime);
+          calendar.style.display = "none"; // Kalender wieder verstecken
+        }
+
+        let timestamp = new Date();
+        let auto = true;
+
+        updateImages();
+
+        setInterval(updateImages, 60000);
+      </script>
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          const chartContainer = document.getElementById("myChart");
+
+          fetch(
+            "https://windyapp.co/apiV9.php?method=getMeteostationDataAndInfo&meteostationID=DWD_3379"
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              const windAvg = data.response.data.map((item) => ({
+                x: new Date(item.timestamp * 1000).toLocaleString(),
+                y: item.wind_avg * 3.6, // m/s in km/h umrechnen
+              }));
+              /*
+                        const windMin = data.response.data.map(item => ({
+                            x: new Date(item.timestamp * 1000).toLocaleString(),
+                            y: item.wind_min * 3.6 // m/s in km/h umrechnen
+                        }));*/
+              const windMax = data.response.data.map((item) => ({
+                x: new Date(item.timestamp * 1000).toLocaleString(),
+                y: item.wind_max * 3.6, // m/s in km/h umrechnen
+              }));
+
+              myChart = new Chart(chartContainer, {
+                type: "line",
+                data: {
+                  datasets: [
+                    {
+                      label: "Wind Durchschnitt",
+                      data: windAvg,
+                      borderColor: "blue",
+                      fill: false,
+                    },
+                    /*
+                        {
+                          label: 'Wind Minimum',
+                          data: windMin,
+                          borderColor: 'green',
+                          fill: false
+                        },*/
+                    {
+                      label: "Wind Maximum",
+                      data: windMax,
+                      borderColor: "red",
+                      fill: false,
+                    },
+                  ],
+                },
+                options: {
+                  width: window.innerWidth,
+                  maintainAspectRatio: false,
+                  responsive: true,
+                  scales: {
+                    x: {
+                      type: "category",
+                    },
+                    y: {
+                      title: {
+                        display: true,
+                        text: "Windgeschwindigkeit (km/h)", // Achsenbeschriftung anpassen
+                      },
                     },
                   },
                 },
-              },
-            });
+              });
 
-            // Onclick-Event für das Diagramm innerhalb des Event-Listeners
-            myChart.canvas.onclick = function (evt) {
-              const activePoints = myChart.getElementsAtEventForMode(
-                evt,
-                "nearest",
-                { intersect: true },
-                false
-              );
-              if (activePoints.length) {
-                const firstPoint = activePoints[0];
-                const label = myChart.data.labels[firstPoint.index];
-                const value =
-                  myChart.data.datasets[firstPoint.datasetIndex].data[
-                    firstPoint.index
-                  ];
-                //alert(`Label: ${label}, Wert: ${value}`);
-                // Hier wird die Funktion aufgerufen, die Datum und Uhrzeit verarbeitet
-                // Hier wird die Funktion aufgerufen, die Datum und Uhrzeit verarbeitet
-                const regex =
-                  /(\d{2})[\/\.](\d{2})[\/\.](\d{4}), (\d{2}):(\d{2}):(\d{2})/;
-                const match = label.match(regex);
+              // Onclick-Event für das Diagramm innerhalb des Event-Listeners
+              myChart.canvas.onclick = function (evt) {
+                const activePoints = myChart.getElementsAtEventForMode(
+                  evt,
+                  "nearest",
+                  { intersect: true },
+                  false
+                );
+                if (activePoints.length) {
+                  const firstPoint = activePoints[0];
+                  const label = myChart.data.labels[firstPoint.index];
+                  const value =
+                    myChart.data.datasets[firstPoint.datasetIndex].data[
+                      firstPoint.index
+                    ];
+                  //alert(`Label: ${label}, Wert: ${value}`);
+                  // Hier wird die Funktion aufgerufen, die Datum und Uhrzeit verarbeitet
+                  // Hier wird die Funktion aufgerufen, die Datum und Uhrzeit verarbeitet
+                  const regex =
+                    /(\d{2})[\/\.](\d{2})[\/\.](\d{4}), (\d{2}):(\d{2}):(\d{2})/;
+                  const match = label.match(regex);
 
-                if (match) {
-                  const [, day, month, year, hours, minutes, seconds] = match;
-                  const date = new Date(
-                    year,
-                    month - 1,
-                    day,
-                    hours,
-                    minutes,
-                    seconds
-                  );
-                  showData(date);
+                  if (match) {
+                    const [, day, month, year, hours, minutes, seconds] = match;
+                    const date = new Date(
+                      year,
+                      month - 1,
+                      day,
+                      hours,
+                      minutes,
+                      seconds
+                    );
+                    showData(date);
+                  }
                 }
-              }
-            };
-          });
-      });
-      // Funktion zum Anzeigen der Daten
-      function showData(date) {
-        //alert(date);
-        if (date != null) {
-          timestamp = date;
-          auto = false;
-        }
-        else
-          auto = true;
+              };
+            });
+        });
+        // Funktion zum Anzeigen der Daten
+        function showData(date) {
+          //alert(date);
+          if (date != null) {
+            timestamp = date;
+            auto = false;
+          } else auto = true;
 
-        updateImages();
-      }
-    </script>
+          updateImages();
+        }
+      </script>
   </body>
 </html>
